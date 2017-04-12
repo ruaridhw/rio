@@ -2,6 +2,8 @@
 #' @description Use \code{\link{import}} to import a list of data frames from a vector of file names or from a multi-object file (Excel workbook, .Rdata file, zip directory, or HTML file)
 #' @param file A character string containing a single file name for a multi-object file (e.g., Excel workbook, zip directory, or HTML file), or a vector of file paths for multiple files to be imported.
 #' @param which If \code{file} is a single file path, this specifies which objects should be extracted (passed to \code{\link{import}}'s \code{which} argument). Ignored otherwise.
+#' @param allow_failure Logical. If TRUE then any files will be allowed to fail \code{\link{import}} and return NULL without interrupting \code{import_list}
+#' @param add_source Logical. If TRUE then a column will be added to each data.frame with the source filename. For use when many files form part of a larger dataset where the filename is a discerning feature.
 #' @param \dots Additional arguments passed to \code{\link{import}}. Behavior may be unexpected if files are of different formats.
 #' @return A list of a data frames.
 #' @examples
@@ -26,9 +28,9 @@
 #' 
 #' @seealso \code{\link{import}}
 #' @export
-import_list <- function(file, which, ...) {
+import_list <- function(file, which, allow_failure = FALSE, add_source = FALSE, ...) {
     if (length(file) > 1) {
-        lapply(file, import, ...)
+        lapply(file, .import_list_handler, ...)
     } else {
         if (get_ext(file) == "rdata") {
             e <- new.env()
@@ -48,6 +50,31 @@ import_list <- function(file, which, ...) {
                 which <- 1
             }
         }
-        lapply(which, function(w) import(file, which = w, ...))
+        lapply(which, function(w) .import_list_handler(file, which = w, ...))
     }
+}
+
+.import_list_handler <- function(file, which, allow_failure, add_source, ...){
+  file_failed <- FALSE
+  tryCatch(
+    {
+      data <- import(file, ...)
+    },
+    error = function(e){
+      if(allow_failure){
+        warning(conditionMessage(e))
+        file_failed <<- TRUE
+      } else {
+        stop(e)
+      }
+    }
+  )
+  if(file_failed) return(NULL)
+  
+  if(add_source){
+    names(data) <- make.names(c(names(data), "Source.File"), unique = TRUE)
+    src_col_name <- tail(names(data), n = 1)
+    data[[src_col_name]] <- file.short
+  }
+  return(data)
 }

@@ -4,12 +4,16 @@
 \alias{import_list}
 \title{Import list of data frames}
 \usage{
-import_list(file, which, ...)
+import_list(file, which, allow_failure = FALSE, add_source = FALSE, ...)
 }
 \arguments{
 \item{file}{A character string containing a single file name for a multi-object file (e.g., Excel workbook, zip directory, or HTML file), or a vector of file paths for multiple files to be imported.}
 
 \item{which}{If \code{file} is a single file path, this specifies which objects should be extracted (passed to \code{\link{import}}'s \code{which} argument). Ignored otherwise.}
+
+\item{allow_failure}{Logical. If TRUE then any files will be allowed to fail \code{\link{import}} and return NULL without interrupting \code{import_list}}
+
+\item{add_source}{Logical. If TRUE then a column will be added to each data.frame with the source filename. For use when many files form part of a larger dataset where the filename is a discerning feature.}
 
 \item{\dots}{Additional arguments passed to \code{\link{import}}. Behavior may be unexpected if files are of different formats.}
 }
