@@ -62,7 +62,7 @@ import_list <- function(file, which, allow_failure = FALSE, add_source = FALSE, 
     },
     error = function(e){
       if(allow_failure){
-        warning(conditionMessage(e))
+        warning("In ", basename(file), " : ", e$message, call. = FALSE)
         file_failed <<- TRUE
       } else {
         stop(e)
