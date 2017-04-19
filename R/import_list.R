@@ -30,7 +30,7 @@
 #' @export
 import_list <- function(file, which, allow_failure = FALSE, add_source = FALSE, ...) {
     if (length(file) > 1) {
-        lapply(file, .import_list_handler, ...)
+        lapply(file, .import_list_handler, which, allow_failure, add_source, ...)
     } else {
         if (get_ext(file) == "rdata") {
             e <- new.env()
@@ -50,7 +50,7 @@ import_list <- function(file, which, allow_failure = FALSE, add_source = FALSE, 
                 which <- 1
             }
         }
-        lapply(which, function(w) .import_list_handler(file, which = w, ...))
+        lapply(which, function(w) .import_list_handler(file, which = w, allow_failure, add_source, ...))
     }
 }
 
@@ -69,12 +69,14 @@ import_list <- function(file, which, allow_failure = FALSE, add_source = FALSE, 
       }
     }
   )
-  if(file_failed) return(NULL)
+  if(file_failed){
+    return(NULL)
+  }
   
   if(add_source){
     names(data) <- make.names(c(names(data), "Source.File"), unique = TRUE)
     src_col_name <- tail(names(data), n = 1)
-    data[[src_col_name]] <- file.short
+    data[[src_col_name]] <- basename(file)
   }
-  return(data)
+  data
 }
