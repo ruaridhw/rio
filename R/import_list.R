@@ -74,8 +74,14 @@ import_list <- function(file, which, allow_failure = FALSE, add_source = FALSE, 
   }
   
   if(add_source){
-    names(data) <- make.names(c(names(data), "Source.File"), unique = TRUE)
-    src_col_name <- tail(names(data), n = 1)
+    src_col_name <-
+      if("_file" %in% names(data)){
+        data_names <- make.names(c(names(data), "_file"), unique = TRUE)
+        tail(data_names, n = 1)
+      } else {
+        "_file"
+      }
+    
     data[[src_col_name]] <- basename(file)
   }
   data
